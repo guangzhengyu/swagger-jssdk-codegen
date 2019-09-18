@@ -1,6 +1,6 @@
 {
   "name": "swagger-jssdk-codegen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Swagger jssdk codegen",
   "author": "guangzhengyu@foxmail.com",
   "main": "dist/index.js",
