@@ -20,5 +20,9 @@
     "nodemon": "^1.19.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guangzhengyu/swagger-jssdk-codegen.git"
   }
 }
