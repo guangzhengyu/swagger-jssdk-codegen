@@ -3819,57 +3819,18 @@ function arrSuffix (def) {
   return def.isArray ? '[]' : ''
 }
 
-const pluralize = require('pluralize');
-
-function generateApiName (path, method, isSingleResource) {
-  return action(method) + resourceName(path, isSingleResource)
-}
-
-function action (method) {
-  return {
-    get: 'get',
-    post: 'create',
-    put: 'update',
-    delete: 'delete'
-  }[method]
-}
-
-function resourceName (path, isSingleResource) {
-  return pathNames(path)
-    .map(isSingleResource ? pluralize.singular : pluralizeLastOne)
-    .join('')
-}
-
-/**
- * 切分路径为路径数组 /foo/bar -> ['Foo', 'Bar']
- * @param path
- * @returns {string[]}
- */
-function pathNames (path) {
-  // /course_schedule
-  // /[course]_schedule，(/)<-[字符+]->(_)：(?<=\/)\w+(?=_)。
-  // /course_[schedule]，(/字符+_)<-[字符+]：(?<=\/\w+_)
-  return words(path, /(?<=\/)\w+(?=_)|(?<=\/\w+_)\w+|(?<=\/)\w+/g).map(upperFirst)
-}
-
-function pluralizeLastOne (str, index, arr) {
-  return index === arr.length - 1 ? pluralize(str) : pluralize.singular(str)
-}
+// import generateApiName from './name'
 
 function generateApis (spec) {
-  return flatMap(spec.paths, (methods, path) => flatMap(methods, ({ responses, parameters, summary }, method) => {
+  return flatMap(spec.paths, (methods, path) => flatMap(methods, ({ responses, parameters, summary, operationId }, method) => {
     const api = {};
     api.path = spec.basePath + path;
     api.method = method;
     api.responses = resolveResponses(responses);
     api.parameters = resolveParameters(parameters);
-    api.name = generateApiName(path, method, isSingleResource(path, method, api.responses.isArray));
+    api.name = operationId;
     return api
   }))
-
-  function isSingleResource (path, method, isRespArray) {
-    return ['post', 'delete', 'put'].includes(method) || path.match(/{\w+}$/) || (method === 'get' && !isRespArray)
-  }
 }
 
 function resolveParameters (parameters = []) {
@@ -3889,8 +3850,8 @@ function resolveParameters (parameters = []) {
 
 function resolveResponses (responses = []) {
   // spec.paths -> responses
-  const { schema } = find(responses, (resp, statusCode) => isRespSuccess(statusCode));
-  if (!schema) return
+  const { schema } = find(responses, (resp, statusCode) => isRespSuccess(statusCode)) || {};
+  if (!schema) return {}
   return mapProperty(schema)
 
   function isRespSuccess (statusCode) {
